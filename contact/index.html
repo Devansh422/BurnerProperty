@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact · Burner Properties</title>
+  <meta name="description" content="Tell us about your plot, your build, or your move-in date. We reply within two working days." />
+  <link rel="icon" href="/assets/logo.png" />
+  <link rel="stylesheet" href="/style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+</head>
+<body>
+
+  <div class="page-reveal" aria-hidden="true">
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+  </div>
+
+  <nav class="nav" aria-label="Primary">
+    <a href="/" class="nav-brand" aria-label="Burner Properties home">
+      <img src="/assets/logo.png" alt="Burner Properties" />
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/about/">About</a></li>
+      <li><a href="/blogs/">Journal</a></li>
+      <li><a href="/contact/" aria-current="page">Contact</a></li>
+    </ul>
+    <a href="/contact/" class="nav-cta"><span class="dot"></span>Book a consult</a>
+    <button class="nav-toggle" aria-label="Open menu"><span></span></button>
+  </nav>
+
+  <div class="nav-mobile">
+    <a href="/">Home</a>
+    <a href="/about/">About</a>
+    <a href="/blogs/">Journal</a>
+    <a href="/contact/">Contact</a>
+  </div>
+
+  <!-- PAGE HEAD -->
+  <header class="page-head">
+    <div class="container">
+      <span class="eyebrow page-head__label" data-reveal>Say hello</span>
+      <h1 data-hero-title>Tell us what you're <em>picturing</em>.</h1>
+      <p class="page-head__sub" data-hero-meta>A plot on the coast, a townhouse upgrade, or just a fuzzy idea — we take them all the same way. A studio lead replies within two working days.</p>
+    </div>
+  </header>
+
+  <!-- CONTACT -->
+  <section style="padding-top:2rem;">
+    <div class="container">
+      <div class="contact">
+        <!-- INFO -->
+        <div class="contact-info">
+          <div class="info-block">
+            <h4>Email</h4>
+            <a href="mailto:hello@burnerproperties.com">hello@burnerproperties.com</a>
+          </div>
+          <div class="info-block">
+            <h4>Studio</h4>
+            <p>04, Richmond Road<br/>Bengaluru · 560025</p>
+          </div>
+          <div class="info-block">
+            <h4>Phone</h4>
+            <a href="tel:+918000000000">+91 80 000 00000</a>
+          </div>
+          <div class="info-block">
+            <h4>Hours</h4>
+            <p>Mon – Sat · 10:00 – 19:00 IST</p>
+          </div>
+          <div class="info-block">
+            <h4>Press &amp; partnerships</h4>
+            <a href="mailto:press@burnerproperties.com">press@burnerproperties.com</a>
+          </div>
+        </div>
+
+        <!-- FORM -->
+        <form class="form" data-reveal onsubmit="event.preventDefault(); alert('Thanks — we\'ll be in touch within two working days.'); this.reset();">
+          <div class="row">
+            <label>
+              First name
+              <input type="text" name="first" required />
+            </label>
+            <label>
+              Last name
+              <input type="text" name="last" required />
+            </label>
+          </div>
+          <label>
+            Email
+            <input type="email" name="email" required />
+          </label>
+          <label>
+            Phone (optional)
+            <input type="tel" name="phone" />
+          </label>
+          <label>
+            I'm interested in
+            <select name="interest" required>
+              <option value="">Choose one…</option>
+              <option>Finding a plot</option>
+              <option>Designing a new home</option>
+              <option>End-to-end (plot → furnish)</option>
+              <option>Interiors only</option>
+              <option>Something else</option>
+            </select>
+          </label>
+          <label>
+            Tell us a bit more
+            <textarea name="message" placeholder="City, rough timeline, budget range if you know it — all optional."></textarea>
+          </label>
+          <button type="submit" class="btn btn-primary form__submit">
+            Send enquiry
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+        </form>
+      </div>
+
+      <div class="map" data-reveal aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>Land acquisition <span class="dot"></span></span>
+        <span>Architecture <span class="dot"></span></span>
+        <span>Construction <span class="dot"></span></span>
+        <span>Interior design <span class="dot"></span></span>
+        <span>Furnishing <span class="dot"></span></span>
+        <span>Handover <span class="dot"></span></span>
+        <span>Land acquisition <span class="dot"></span></span>
+        <span>Architecture <span class="dot"></span></span>
+        <span>Construction <span class="dot"></span></span>
+        <span>Interior design <span class="dot"></span></span>
+        <span>Furnishing <span class="dot"></span></span>
+        <span>Handover <span class="dot"></span></span>
+      </div>
+    </div>
+    <div class="container">
+      <div class="grid-cols">
+        <div>
+          <div class="big">Burner<br/>Properties.</div>
+          <p style="font-size:14px; opacity:0.8; max-width:34ch;">A design-build studio for people who want one signature on the contract.</p>
+        </div>
+        <div>
+          <h4>Studio</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/blogs/">Journal</a></li>
+            <li><a href="/contact/">Contact</a></li>
+            <li><a href="/contact/">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Services</h4>
+          <ul>
+            <li><a href="/#process">Land sourcing</a></li>
+            <li><a href="/#process">Architecture</a></li>
+            <li><a href="/#process">Construction</a></li>
+            <li><a href="/#process">Interiors</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Social</h4>
+          <ul>
+            <li><a href="#">Instagram</a></li>
+            <li><a href="#">LinkedIn</a></li>
+            <li><a href="#">YouTube</a></li>
+            <li><a href="#">Pinterest</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Burner Properties Pvt. Ltd.</span>
+        <span>Bengaluru · Mumbai · Goa</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

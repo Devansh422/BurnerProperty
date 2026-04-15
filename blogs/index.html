@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Journal · Burner Properties</title>
+  <meta name="description" content="Notes from the studio — land-buying checklists, build diaries, material deep-dives and the occasional rant about grout." />
+  <link rel="icon" href="/assets/logo.png" />
+  <link rel="stylesheet" href="/style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+</head>
+<body>
+
+  <div class="page-reveal" aria-hidden="true">
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+  </div>
+  <nav class="nav" aria-label="Primary">
+    <a href="/" class="nav-brand" aria-label="Burner Properties home">
+      <img src="/assets/logo.png" alt="Burner Properties" />
+    </a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/about/">About</a></li>
+      <li><a href="/blogs/" aria-current="page">Journal</a></li>
+      <li><a href="/contact/">Contact</a></li>
+    </ul>
+    <a href="/contact/" class="nav-cta"><span class="dot"></span>Book a consult</a>
+    <button class="nav-toggle" aria-label="Open menu"><span></span></button>
+  </nav>
+
+  <div class="nav-mobile">
+    <a href="/">Home</a>
+    <a href="/about/">About</a>
+    <a href="/blogs/">Journal</a>
+    <a href="/contact/">Contact</a>
+  </div>
+
+  <!-- PAGE HEAD -->
+  <header class="page-head">
+    <div class="container">
+      <span class="eyebrow page-head__label" data-reveal>Journal · 2026</span>
+      <h1 data-hero-title>Notes from the studio.</h1>
+      <p class="page-head__sub" data-hero-meta>Land-buying checklists, build diaries, material deep-dives and the occasional rant about grout. Read the ones that sound useful; ignore the rest.</p>
+    </div>
+  </header>
+
+  <!-- BLOG -->
+  <section style="padding-top: 2rem;">
+    <div class="container">
+      <div class="blog-tabs" data-reveal>
+        <button class="is-active" type="button">All</button>
+        <button type="button">Land</button>
+        <button type="button">Architecture</button>
+        <button type="button">Construction</button>
+        <button type="button">Interiors</button>
+        <button type="button">Finance</button>
+      </div>
+
+      <div class="blog-grid">
+        <!-- FEATURED -->
+        <article class="blog-card feature">
+          <div class="blog-card__media" data-parallax="30"></div>
+          <div class="blog-card__meta"><span>Land</span><span>Apr 2026 · 8 min</span></div>
+          <h3 class="blog-card__title">The 14 things we check before you ever sign a plot agreement.</h3>
+          <p class="blog-card__excerpt">Title deeds are only the start. The checklist we've refined across 148 homes — including the three questions that have killed more deals than any legal clause.</p>
+          <a class="blog-card__more" href="#">
+            Read the piece
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+        </article>
+
+        <article class="blog-card">
+          <div class="blog-card__media"></div>
+          <div class="blog-card__meta"><span>Construction</span><span>Mar 2026 · 5 min</span></div>
+          <h3 class="blog-card__title">Why we pour concrete on Tuesdays.</h3>
+          <p class="blog-card__excerpt">A small operational choice that saved us two weeks per project — and the curing science behind it.</p>
+        </article>
+
+        <article class="blog-card">
+          <div class="blog-card__media"></div>
+          <div class="blog-card__meta"><span>Interiors</span><span>Mar 2026 · 6 min</span></div>
+          <h3 class="blog-card__title">The honest cost of a "simple" kitchen.</h3>
+          <p class="blog-card__excerpt">Line-item breakdown of a mid-range modular kitchen — what's fair, what's markup, what's worth paying for.</p>
+        </article>
+
+        <article class="blog-card">
+          <div class="blog-card__media"></div>
+          <div class="blog-card__meta"><span>Architecture</span><span>Feb 2026 · 7 min</span></div>
+          <h3 class="blog-card__title">Plan for the couch you already own.</h3>
+          <p class="blog-card__excerpt">Every house we design starts with a list of objects you're bringing — not a mood-board you're copying.</p>
+        </article>
+
+        <article class="blog-card">
+          <div class="blog-card__media"></div>
+          <div class="blog-card__meta"><span>Finance</span><span>Feb 2026 · 9 min</span></div>
+          <h3 class="blog-card__title">Open-book pricing, explained.</h3>
+          <p class="blog-card__excerpt">What it means when a builder says it, what we actually do, and how to read the monthly statement we send you.</p>
+        </article>
+
+        <article class="blog-card">
+          <div class="blog-card__media"></div>
+          <div class="blog-card__meta"><span>Land</span><span>Jan 2026 · 6 min</span></div>
+          <h3 class="blog-card__title">Soil tests: the one page your broker skipped.</h3>
+          <p class="blog-card__excerpt">Half our rejected plots fail here. What a soil report actually tells you, and why it decides the foundation type.</p>
+        </article>
+
+        <article class="blog-card">
+          <div class="blog-card__media"></div>
+          <div class="blog-card__meta"><span>Interiors</span><span>Jan 2026 · 4 min</span></div>
+          <h3 class="blog-card__title">Seven light fixtures worth the splurge.</h3>
+          <p class="blog-card__excerpt">Where lighting shows, where it doesn't, and where a ₹2,000 fixture looks better than a ₹40,000 one.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-banner">
+    <div class="container">
+      <span class="eyebrow" data-reveal>Subscribe</span>
+      <h2 data-split>One email, once a month.</h2>
+      <p class="lead" data-reveal>The best of the journal plus the occasional off-market plot. No spam, no drip sequences.</p>
+      <a href="/contact/" class="btn btn-primary" data-reveal>
+        Join the list
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>Land acquisition <span class="dot"></span></span>
+        <span>Architecture <span class="dot"></span></span>
+        <span>Construction <span class="dot"></span></span>
+        <span>Interior design <span class="dot"></span></span>
+        <span>Furnishing <span class="dot"></span></span>
+        <span>Handover <span class="dot"></span></span>
+        <span>Land acquisition <span class="dot"></span></span>
+        <span>Architecture <span class="dot"></span></span>
+        <span>Construction <span class="dot"></span></span>
+        <span>Interior design <span class="dot"></span></span>
+        <span>Furnishing <span class="dot"></span></span>
+        <span>Handover <span class="dot"></span></span>
+      </div>
+    </div>
+    <div class="container">
+      <div class="grid-cols">
+        <div>
+          <div class="big">Burner<br/>Properties.</div>
+          <p style="font-size:14px; opacity:0.8; max-width:34ch;">A design-build studio for people who want one signature on the contract.</p>
+        </div>
+        <div>
+          <h4>Studio</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/blogs/">Journal</a></li>
+            <li><a href="/contact/">Contact</a></li>
+            <li><a href="/contact/">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Services</h4>
+          <ul>
+            <li><a href="/#process">Land sourcing</a></li>
+            <li><a href="/#process">Architecture</a></li>
+            <li><a href="/#process">Construction</a></li>
+            <li><a href="/#process">Interiors</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Social</h4>
+          <ul>
+            <li><a href="#">Instagram</a></li>
+            <li><a href="#">LinkedIn</a></li>
+            <li><a href="#">YouTube</a></li>
+            <li><a href="#">Pinterest</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Burner Properties Pvt. Ltd.</span>
+        <span>Bengaluru · Mumbai · Goa</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+  <script>
+    document.querySelectorAll('.blog-tabs button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.blog-tabs button').forEach((b) => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+      });
+    });
+  </script>
+</body>
+</html>

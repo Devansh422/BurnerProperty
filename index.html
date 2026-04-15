@@ -1,9 +1,385 @@
-<html>
-    <head>
-        <title>Burner Properties</title>
-    </head>
-    <body>
-        <h1>Welcome to Burner Properties</h1>
-        <p>This is a simple HTML page.</p>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Burner Properties  Land, Build, Furnish.</title>
+  <meta name="description" content="Burner Properties delivers end-to-end real estate: from buying land to construction to final furnishing. One studio, one signature." />
+  <link rel="icon" href="/assets/logo.png" />
+  <link rel="stylesheet" href="/style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+</head>
+<body>
+
+  <!-- PAGE REVEAL CURTAIN -->
+  <div class="page-reveal" aria-hidden="true">
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+    <div class="page-reveal__col"></div>
+  </div>
+
+  <!-- FLOATING NAV -->
+  <nav class="nav" aria-label="Primary">
+    <a href="/" class="nav-brand" aria-label="Burner Properties home">
+      <img src="/assets/logo.png" alt="Burner Properties" />
+    </a>
+    <ul class="nav-links">
+      <li><a href="/" aria-current="page">Home</a></li>
+      <li><a href="/about/">About</a></li>
+      <li><a href="/blogs/">Journal</a></li>
+      <li><a href="/contact/">Contact</a></li>
+    </ul>
+    <a href="/contact/" class="nav-cta">
+      <span class="dot"></span>
+      Book a consult
+    </a>
+    <button class="nav-toggle" aria-label="Open menu"><span></span></button>
+  </nav>
+
+  <!-- MOBILE NAV -->
+  <div class="nav-mobile">
+    <a href="/">Home</a>
+    <a href="/about/">About</a>
+    <a href="/blogs/">Journal</a>
+    <a href="/contact/">Contact</a>
+  </div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero__media" data-hero-visual aria-hidden="true">
+      <video class="hero__video" autoplay muted loop playsinline preload="metadata">
+        <source src="/assets/hero-video.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div class="container">
+      <div class="hero__content">
+        <h1 class="hero__title" data-hero-title>
+          One team for land, build, and your final move-in.
+        </h1>
+        <div class="hero__meta" data-hero-meta>
+          <p>From legal diligence and architecture to construction and furnishing, we run the entire home journey with a single accountable team.</p>
+          <a href="/contact/" class="btn btn-primary hero__cta-btn">
+            Book a consult
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MARQUEE -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track">
+      <span>Land acquisition <span class="dot"></span></span>
+      <span>Architecture <span class="dot"></span></span>
+      <span>Construction <span class="dot"></span></span>
+      <span>Interior design <span class="dot"></span></span>
+      <span>Furnishing <span class="dot"></span></span>
+      <span>Handover <span class="dot"></span></span>
+      <span>Land acquisition <span class="dot"></span></span>
+      <span>Architecture <span class="dot"></span></span>
+      <span>Construction <span class="dot"></span></span>
+      <span>Interior design <span class="dot"></span></span>
+      <span>Furnishing <span class="dot"></span></span>
+      <span>Handover <span class="dot"></span></span>
+    </div>
+  </div>
+
+  <!-- HOME CAROUSEL -->
+  <section class="home-carousel-section" aria-label="Featured residences">
+    <div class="container">
+      <div class="home-carousel" data-home-carousel aria-roledescription="carousel">
+        <div class="home-carousel__viewport">
+          <article class="home-carousel__slide is-active" data-carousel-slide>
+            <img src="/assets/c1.webp" alt="The Coffee-Hill Residence" loading="lazy" decoding="async" />
+            <div class="home-carousel__overlay" aria-hidden="true"></div>
+            <div class="home-carousel__content">
+              <span class="home-carousel__chip">Coorg · Delivered</span>
+              <h3>The Coffee-Hill Residence</h3>
+              <p>4 BR · 3,800 sqft · 2024</p>
+            </div>
+          </article>
+
+          <article class="home-carousel__slide" data-carousel-slide>
+            <img src="/assets/c2.webp" alt="Tamarind House" loading="lazy" decoding="async" />
+            <div class="home-carousel__overlay" aria-hidden="true"></div>
+            <div class="home-carousel__content">
+              <span class="home-carousel__chip">Alibaug · Delivered</span>
+              <h3>Tamarind House</h3>
+              <p>5 BR · 5,200 sqft · 2024</p>
+            </div>
+          </article>
+
+          <article class="home-carousel__slide" data-carousel-slide>
+            <img src="/assets/c3.webp" alt="Plot 42 Townhouse" loading="lazy" decoding="async" />
+            <div class="home-carousel__overlay" aria-hidden="true"></div>
+            <div class="home-carousel__content">
+              <span class="home-carousel__chip">Bengaluru · In Progress</span>
+              <h3>Plot 42 Townhouse</h3>
+              <p>3 BR · 2,600 sqft · 2025</p>
+            </div>
+          </article>
+
+          <article class="home-carousel__slide" data-carousel-slide>
+            <img src="/assets/c4.webp" alt="Signature Hillside Villa" loading="lazy" decoding="async" />
+            <div class="home-carousel__overlay" aria-hidden="true"></div>
+            <div class="home-carousel__content">
+              <span class="home-carousel__chip">Goa · Signature Series</span>
+              <h3>Signature Hillside Villa</h3>
+              <p>4 BR · 4,100 sqft · 2026</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="home-carousel__controls" aria-label="Carousel controls">
+          <button class="home-carousel__arrow" data-carousel-prev aria-label="Previous slide" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+
+          <div class="home-carousel__dots" role="tablist" aria-label="Slide indicators">
+            <button class="home-carousel__dot is-active" data-carousel-dot="0" aria-label="Go to slide 1" aria-selected="true" type="button"></button>
+            <button class="home-carousel__dot" data-carousel-dot="1" aria-label="Go to slide 2" aria-selected="false" type="button"></button>
+            <button class="home-carousel__dot" data-carousel-dot="2" aria-label="Go to slide 3" aria-selected="false" type="button"></button>
+            <button class="home-carousel__dot" data-carousel-dot="3" aria-label="Go to slide 4" aria-selected="false" type="button"></button>
+          </div>
+
+          <button class="home-carousel__arrow" data-carousel-next aria-label="Next slide" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="process" class="process">
+    <div class="container">
+      <div class="process__head">
+        <div>
+          <h2 data-split>One studio. From plot to pillow.</h2>
+        </div>
+        <p data-reveal>Instead of piecing together a broker, an architect, a builder and an interior team, every phase sits under one roof  the same drawing informs the wiring, the furniture, and the final walkthrough.</p>
+      </div>
+
+      <div class="process__list">
+        <article class="step">
+          <div class="step__num">01</div>
+          <div>
+            <h3 class="step__title">Land &amp; legal</h3>
+          </div>
+          <p class="step__desc">We scout, vet and negotiate plots  zoning, title clearance, soil tests and permits handled before you sign anything.</p>
+          <a href="/contact/" class="step__arrow" aria-label="Learn about land &amp; legal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+          </a>
+        </article>
+
+        <article class="step">
+          <div class="step__num">02</div>
+          <div>
+            <h3 class="step__title">Architecture</h3>
+          </div>
+          <p class="step__desc">Design that starts with how you actually live  mornings, guests, storage, the view you wake up to. Drawings you can understand.</p>
+          <a href="/contact/" class="step__arrow" aria-label="Learn about architecture">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+          </a>
+        </article>
+
+        <article class="step">
+          <div class="step__num">03</div>
+          <div>
+            <h3 class="step__title">Construction</h3>
+          </div>
+          <p class="step__desc">Our own site crews, weekly progress reels, open-book material rates. No surprise invoices, no disappearing contractor.</p>
+          <a href="/contact/" class="step__arrow" aria-label="Learn about construction">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+          </a>
+        </article>
+
+        <article class="step">
+          <div class="step__num">04</div>
+          <div>
+            <h3 class="step__title">Furnish &amp; move-in</h3>
+          </div>
+          <p class="step__desc">Interior styling, bespoke joinery, lighting, plants and the last throw pillow. You walk in with your suitcase.</p>
+          <a href="/contact/" class="step__arrow" aria-label="Learn about furnishing">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED PROPERTIES -->
+  <section class="properties">
+    <div class="container">
+      <div class="props__head">
+        <div>
+          <h2 data-split>Homes we finished, keys in hand.</h2>
+        </div>
+        <a href="/blogs/" class="btn btn-ghost" data-reveal>
+          View portfolio
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="props__grid">
+        <article class="card">
+          <div class="card__media" data-parallax="20">
+            <img class="card__img" src="/assets/c1.webp" alt="The Coffee-Hill Residence exterior" loading="lazy" decoding="async" />
+          </div>
+          <span class="card__tag">Villa · Delivered</span>
+          <div class="card__body">
+            <div class="card__loc">Coorg, Karnataka</div>
+            <h3 class="card__title">The Coffee-Hill Residence</h3>
+            <div class="card__meta">
+              <span>4 BR</span>
+              <span>·</span>
+              <span>3,800 sqft</span>
+              <span>·</span>
+              <span>2024</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__media" data-parallax="35">
+            <img class="card__img" src="/assets/c2.webp" alt="Tamarind House facade" loading="lazy" decoding="async" />
+          </div>
+          <span class="card__tag">Farmhouse · Delivered</span>
+          <div class="card__body">
+            <div class="card__loc">Alibaug, Maharashtra</div>
+            <h3 class="card__title">Tamarind House</h3>
+            <div class="card__meta">
+              <span>5 BR</span>
+              <span>·</span>
+              <span>5,200 sqft</span>
+              <span>·</span>
+              <span>2024</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__media" data-parallax="50">
+            <img class="card__img" src="/assets/c3.webp" alt="Plot 42 Townhouse construction progress" loading="lazy" decoding="async" />
+          </div>
+          <span class="card__tag">Urban · In progress</span>
+          <div class="card__body">
+            <div class="card__loc">Indiranagar, Bengaluru</div>
+            <h3 class="card__title">Plot 42 Townhouse</h3>
+            <div class="card__meta">
+              <span>3 BR</span>
+              <span>·</span>
+              <span>2,600 sqft</span>
+              <span>·</span>
+              <span>2025</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIAL -->
+  <section>
+    <div class="container">
+      <div class="testi">
+        <div>
+          <span class="eyebrow" data-reveal>Client · Priya &amp; Arjun</span>
+          <h2 data-split>The house we pictured  without picturing any of the stress.</h2>
+        </div>
+        <div>
+          <p class="testi__quote" data-reveal>"We looked at 30 plots with Burner, ended up buying one they found on day nine. Sixteen months later we walked in with a suitcase and a dog. Every promised date was met."</p>
+          <div class="testi__author" data-reveal>
+            <div class="testi__avatar">P</div>
+            <div>
+              <div class="testi__name">Priya Menon</div>
+              <div class="testi__role">Homeowner · Coorg villa</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-banner">
+    <div class="container">
+      <h2 data-split>Your key,<br/><em>our work.</em></h2>
+      <p class="lead" data-reveal>Tell us what you're dreaming of  a plot, a home, or just the vibe. We'll come back within two working days.</p>
+      <a href="/contact/" class="btn btn-primary" data-reveal>
+        Book a consult
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>Land acquisition <span class="dot"></span></span>
+        <span>Architecture <span class="dot"></span></span>
+        <span>Construction <span class="dot"></span></span>
+        <span>Interior design <span class="dot"></span></span>
+        <span>Furnishing <span class="dot"></span></span>
+        <span>Handover <span class="dot"></span></span>
+        <span>Land acquisition <span class="dot"></span></span>
+        <span>Architecture <span class="dot"></span></span>
+        <span>Construction <span class="dot"></span></span>
+        <span>Interior design <span class="dot"></span></span>
+        <span>Furnishing <span class="dot"></span></span>
+        <span>Handover <span class="dot"></span></span>
+      </div>
+    </div>
+    <div class="container">
+      <div class="grid-cols">
+        <div>
+          <div class="big">Burner<br/>Properties.</div>
+          <p style="font-size:14px; opacity:0.8; max-width:34ch;">A design-build studio for people who want one signature on the contract  and one team at the door.</p>
+        </div>
+        <div>
+          <h4>Studio</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/blogs/">Journal</a></li>
+            <li><a href="/contact/">Contact</a></li>
+            <li><a href="/contact/">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Services</h4>
+          <ul>
+            <li><a href="#process">Land sourcing</a></li>
+            <li><a href="#process">Architecture</a></li>
+            <li><a href="#process">Construction</a></li>
+            <li><a href="#process">Interiors</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Social</h4>
+          <ul>
+            <li><a href="#">Instagram</a></li>
+            <li><a href="#">LinkedIn</a></li>
+            <li><a href="#">YouTube</a></li>
+            <li><a href="#">Pinterest</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Burner Properties Pvt. Ltd.</span>
+        <span>Bengaluru · Mumbai · Goa</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
 </html>
