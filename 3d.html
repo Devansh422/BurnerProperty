@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>House GLB Viewer</title>
+<link rel="icon" href="data:," />
+<link rel="stylesheet" href="./style.css" />
+<link rel="stylesheet" href="./3d.css" />
+</head>
+<body data-app-mode="three-scene">
+<section class="three-scene-section" data-three-scene-section>
+<div id="app" data-three-scene-app></div>
+<div id="story-overlay" aria-live="polite">
+<section class="story-section">
+<h2>One team for land, build, and your final move-in.</h2>
+<p>From legal diligence and architecture to construction and furnishing, we run the entire home journey with a single accountable team.</p>
+<a href="/contact/" class="story-cta" aria-label="Book a consult">
+Book a consult
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+<path d="M5 12h14M13 5l7 7-7 7"></path>
+</svg>
+</a>
+</section>
+<section class="story-section">
+<h2>Wind Across The Field</h2>
+<p>Soft gusts sweep through the grass plain, setting a calm but living atmosphere.</p>
+</section>
+<section class="story-section">
+<h2>Ground Opens</h2>
+<p>A clearing forms through the meadow, drawing focus toward the center stage.</p>
+</section>
+<section class="story-section">
+<h2>House Reveals</h2>
+<p>The structure rises from dissolve, with light and shadow returning as it emerges.</p>
+</section>
+<section class="story-section">
+<h2>Full Presence</h2>
+<p>By the end of the scroll, home and landscape move together in one continuous scene.</p>
+</section>
+</div>
+</section>
+
+<script type="importmap">
+{
+"imports": {
+"three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+"three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+}
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script src="./app.js"></script>
+<script type="module" src="./3d.js"></script>
+</body>
+</html>

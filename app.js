@@ -129,9 +129,47 @@ primeAnimationStates();
    ----------------------------------------------------------- */
 let lenis = null;
 let lenisVelocity = 0;
+let lenisScriptPromise = null;
 
-if (typeof window.Lenis !== 'undefined') {
-  lenis = new Lenis({
+function loadLenisScript() {
+  if (typeof window.Lenis !== 'undefined') {
+    return Promise.resolve(window.Lenis);
+  }
+
+  if (lenisScriptPromise) {
+    return lenisScriptPromise;
+  }
+
+  lenisScriptPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-burner-lenis="1"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(window.Lenis));
+      existing.addEventListener('error', () => reject(new Error('Lenis script failed to load')));
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js';
+    script.async = true;
+    script.dataset.burnerLenis = '1';
+    script.onload = () => resolve(window.Lenis);
+    script.onerror = () => reject(new Error('Lenis script failed to load'));
+    document.head.appendChild(script);
+  });
+
+  return lenisScriptPromise;
+}
+
+function initLenis() {
+  if (lenis) {
+    return lenis;
+  }
+
+  if (typeof window.Lenis === 'undefined') {
+    return null;
+  }
+
+  lenis = new window.Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     smoothWheel: true,
@@ -147,9 +185,30 @@ if (typeof window.Lenis !== 'undefined') {
     lenis.raf(time * 1000);
   });
   gsap.ticker.lagSmoothing(0);
-} else {
-  console.warn('[animations] Lenis not detected. Running with native scroll.');
+
+  return lenis;
 }
+
+window.BURNER_SMOOTH_SCROLL = {
+  get instance() {
+    return lenis;
+  },
+  get velocity() {
+    return lenisVelocity;
+  },
+  init: initLenis,
+  load: loadLenisScript,
+};
+
+loadLenisScript()
+  .then(() => {
+    if (!initLenis()) {
+      console.warn('[animations] Lenis unavailable after script load. Running with native scroll.');
+    }
+  })
+  .catch((error) => {
+    console.warn('[animations] Lenis not detected. Running with native scroll.', error);
+  });
 
 /* -----------------------------------------------------------
    MOBILE NAV
@@ -1476,6 +1535,14 @@ function footerReveal() {
    INIT
    ----------------------------------------------------------- */
 window.addEventListener('load', () => {
+  if (document.body?.dataset?.appMode === 'three-scene') {
+    if (lenis) {
+      lenis.start();
+    }
+    ScrollTrigger.refresh();
+    return;
+  }
+
   setupNav();
   let animationSuiteStarted = false;
   let initSafetyTimer = null;

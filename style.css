@@ -232,6 +232,10 @@ section {
   position: relative;
 }
 
+.post-hero-sections {
+  background: var(--base);
+}
+
 .grid {
   display: grid;
   gap: clamp(1rem, 2vw, 2rem);
@@ -597,7 +601,6 @@ section {
   transform: translateX(4px);
 }
 .footer-bottom {
-  margin-top: 4rem;
   padding-top: 1.5rem;
   border-top: 1px solid rgba(232, 222, 201, 0.18);
   display: flex;
@@ -1361,6 +1364,7 @@ section {
   padding-block: clamp(3.5rem, 9vw, 6.5rem);
   position: relative;
   overflow: hidden;
+  margin-bottom: -5rem;
 }
 .cta-banner h2 {
   font-size: clamp(3rem, 9vw, 8rem);
