@@ -1,8 +1,7 @@
 (() => {
   const THREE_D_THRESHOLD = 60;
   const FORCE_KEY = "hero-mode";
-  const AUTO_CACHE_KEY = "hero-auto-mode-cache-v1";
-  const AUTO_CACHE_TTL_MS = 1000 * 60 * 60 * 24;
+  const AUTO_MODE_KEY = "hero-auto-mode";
 
   let fallbackHeroMarkup = "";
 
@@ -35,29 +34,8 @@
   }
 
   function readAutoModeCache() {
-    const raw = readStorage(localStorage, AUTO_CACHE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    try {
-      const parsed = JSON.parse(raw);
-      if (!isValidMode(parsed?.mode)) {
-        return null;
-      }
-
-      if (typeof parsed?.savedAt !== "number") {
-        return null;
-      }
-
-      if (Date.now() - parsed.savedAt > AUTO_CACHE_TTL_MS) {
-        return null;
-      }
-
-      return parsed.mode;
-    } catch {
-      return null;
-    }
+    const mode = readStorage(sessionStorage, AUTO_MODE_KEY);
+    return isValidMode(mode) ? mode : null;
   }
 
   function writeAutoModeCache(mode, detail) {
@@ -65,12 +43,7 @@
       return;
     }
 
-    const payload = {
-      mode,
-      savedAt: Date.now(),
-      score: Number.isFinite(detail?.score) ? detail.score : null,
-    };
-    writeStorage(localStorage, AUTO_CACHE_KEY, JSON.stringify(payload));
+    writeStorage(sessionStorage, AUTO_MODE_KEY, mode);
   }
 
   function scoreDevice() {
@@ -96,7 +69,9 @@
       const weak = ["intel hd", "intel uhd", "intel iris", "mali-4", "mali-t", "adreno 3", "adreno 4", "powervr sgx"];
       score += weak.some((w) => gpu.includes(w)) ? 5 : 25;
     } else {
-      score += 10;
+      // Some browsers block renderer info for privacy; don't under-score capable WebGL2 devices.
+      score += gl2 ? 18 : 8;
+      reasons.push("gpu info unavailable");
     }
 
     if ("deviceMemory" in navigator) {
@@ -140,6 +115,11 @@
   function decideMode() {
     const params = new URLSearchParams(window.location.search);
     const forced = params.get("hero");
+    if (forced === "auto") {
+      removeStorage(sessionStorage, FORCE_KEY);
+      removeStorage(sessionStorage, AUTO_MODE_KEY);
+    }
+
     if (isValidMode(forced)) {
       writeStorage(sessionStorage, FORCE_KEY, forced);
       return { mode: forced, forced: true, source: "query" };
@@ -195,7 +175,9 @@
     if (decision.mode === "3d") {
       load3D(hero).catch((error) => {
         console.warn("[hero] 3D hero failed, falling back to video", error);
-        writeAutoModeCache("video", { score: 0 });
+        if (!decision.forced) {
+          writeAutoModeCache("video", { score: 0 });
+        }
         loadVideo(hero);
       });
     } else {
@@ -205,6 +187,7 @@
     window.switchHero = (mode) => {
       if (mode === "auto") {
         removeStorage(sessionStorage, FORCE_KEY);
+        removeStorage(sessionStorage, AUTO_MODE_KEY);
         location.reload();
         return;
       }

@@ -1345,7 +1345,6 @@ float snoise(vec3 v) {
 
 		function loadGrassBladeGeometry() {
 			const glbPaths = [
-				"./FluffyGrass/public/grassLODs.glb",
 				"./grassLODs.glb"
 			];
 
@@ -1403,11 +1402,9 @@ float snoise(vec3 v) {
 			try {
 				const [grassAlphaTexture, noiseTexture, grassGeometry] = await Promise.all([
 					loadTextureWithFallback([
-						"./FluffyGrass/public/grass.jpeg",
 						"./grass.jpeg"
 					]),
 					loadTextureWithFallback([
-						"./FluffyGrass/public/perlinnoise.webp",
 						"./perlinnoise.webp"
 					]),
 					loadGrassBladeGeometry()
