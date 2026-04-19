@@ -46,6 +46,13 @@
     writeStorage(sessionStorage, AUTO_MODE_KEY, mode);
   }
 
+  function isMobileDevice() {
+    const uaMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const compactViewport = window.matchMedia("(max-width: 767px)").matches;
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    return uaMobile || (compactViewport && coarsePointer);
+  }
+
   function scoreDevice() {
     const reasons = [];
     let score = 0;
@@ -125,26 +132,23 @@
       return { mode: forced, forced: true, source: "query" };
     }
 
+    if (isMobileDevice()) {
+      return { mode: "video", forced: false, source: "mobile" };
+    }
+
     const saved = readStorage(sessionStorage, FORCE_KEY);
     if (isValidMode(saved)) {
       return { mode: saved, forced: true, source: "session" };
     }
 
     const cached = readAutoModeCache();
-    if (isValidMode(cached)) {
+    if (cached === "3d") {
       return { mode: cached, forced: false, source: "cache" };
     }
-
-    const result = scoreDevice();
-    const mode = result.score >= THREE_D_THRESHOLD ? "3d" : "video";
-    writeAutoModeCache(mode, result);
-    console.debug("[hero] device score:", result);
-
     return {
-      mode,
+      mode: "3d",
       forced: false,
-      source: "scored",
-      detail: result,
+      source: cached === "video" ? "desktop-default-override" : "desktop-default",
     };
   }
 
@@ -172,12 +176,10 @@
     fallbackHeroMarkup = hero.innerHTML;
 
     const decision = decideMode();
+    console.debug("[hero] mode decision:", decision);
     if (decision.mode === "3d") {
       load3D(hero).catch((error) => {
         console.warn("[hero] 3D hero failed, falling back to video", error);
-        if (!decision.forced) {
-          writeAutoModeCache("video", { score: 0 });
-        }
         loadVideo(hero);
       });
     } else {
