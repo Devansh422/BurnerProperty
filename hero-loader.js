@@ -159,7 +159,7 @@
     }
 
     const cached = readAutoModeCache();
-    if (isValidMode(cached)) {
+    if (cached === "3d") {
       return { mode: cached, forced: false, source: "cache" };
     }
 
@@ -210,7 +210,7 @@
       load3D(hero).catch((error) => {
         console.warn("[hero] 3D hero failed, falling back to video", error);
         if (!decision.forced) {
-          writeAutoModeCache("video", { source: "3d-failure" });
+          removeStorage(sessionStorage, AUTO_MODE_KEY);
         }
         loadVideo(hero);
       });
