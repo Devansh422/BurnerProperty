@@ -1,6 +1,4 @@
 (() => {
-  const THREE_D_THRESHOLD = 60;
-
   let fallbackHeroMarkup = "";
 
   function isValidMode(mode) {
@@ -31,80 +29,72 @@
     return uaMobile || (compactViewport && coarsePointer);
   }
 
-  function scoreDevice() {
+  // Strict high-end detection. Defaults to false; we only escalate to 3D
+  // when *every* signal we can read says the device is comfortably capable.
+  function checkHighEnd() {
     const reasons = [];
-    let score = 0;
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return { score: 0, gpu: null, reasons: ["prefers-reduced-motion"] };
+      return { highEnd: false, reasons: ["prefers-reduced-motion"] };
     }
 
     const canvas = document.createElement("canvas");
     const gl2 = canvas.getContext("webgl2");
-    const gl = gl2 || canvas.getContext("webgl");
-    if (!gl) return { score: 0, gpu: null, reasons: ["no WebGL"] };
-    score += gl2 ? 25 : 12;
+    if (!gl2) {
+      return { highEnd: false, reasons: ["no WebGL2"] };
+    }
 
     let gpu = "";
-    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+    const dbg = gl2.getExtension("WEBGL_debug_renderer_info");
     if (dbg) {
-      gpu = (gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "").toLowerCase();
+      gpu = (gl2.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "").toLowerCase();
 
-      const software = ["swiftshader", "llvmpipe", "software", "mesa offscreen", "microsoft basic"];
-      if (software.some((s) => gpu.includes(s))) {
-        return { score: 0, gpu, reasons: ["software renderer"] };
+      // Hard reject only on software renderers and clearly antique mobile GPUs.
+      // Note: we deliberately do NOT reject "intel hd"/"intel uhd" — Chrome routes
+      // WebGL through ANGLE on the integrated GPU on many laptops that *also*
+      // have a discrete GPU, so that string is not a reliable weakness signal.
+      const blocked = [
+        "swiftshader", "llvmpipe", "software",
+        "mesa offscreen", "microsoft basic",
+        "mali-4", "powervr sgx"
+      ];
+      if (blocked.some((s) => gpu.includes(s))) {
+        return { highEnd: false, gpu, reasons: ["blocked GPU"] };
       }
-
-      // Integrated/old mobile GPUs cannot hold 60fps with the grass shader — auto-fail.
-      const weak = ["intel hd", "intel uhd", "mali-4", "mali-t", "adreno 3", "adreno 4", "powervr sgx", "intel(r) hd", "intel(r) uhd"];
-      if (weak.some((w) => gpu.includes(w))) {
-        return { score: 0, gpu, reasons: ["weak GPU"] };
-      }
-
-      score += 30;
     } else {
-      // Some browsers (Safari, privacy modes) hide renderer info.
-      // WebGL2 + hidden GPU is most often Apple silicon / modern Mac → still capable.
-      score += gl2 ? 16 : 6;
-      reasons.push("gpu info unavailable");
+      reasons.push("gpu info hidden");
     }
 
+    // CPU: high-end machines today have ≥8 logical cores. Some browsers cap this
+    // at lower values for privacy; treat 0/undefined as "unknown" and accept it
+    // rather than reject (Safari sometimes reports 0).
+    const cores = navigator.hardwareConcurrency;
+    if (typeof cores === "number" && cores > 0 && cores < 8) {
+      return { highEnd: false, cores, reasons: [`cores ${cores} < 8`] };
+    }
+
+    // RAM: browsers cap deviceMemory at 8GB, and many (Firefox/Safari) don't
+    // expose it at all. Require 8 when present, accept when missing.
     if ("deviceMemory" in navigator) {
       const memory = navigator.deviceMemory;
-      if (memory < 2) {
-        return { score: 0, gpu, reasons: [`low memory: ${memory}GB`] };
+      if (typeof memory === "number" && memory > 0 && memory < 8) {
+        return { highEnd: false, memory, reasons: [`memory ${memory}GB < 8`] };
       }
-      score += memory >= 8 ? 18 : memory >= 4 ? 10 : 0;
-    } else {
-      score += 8;
     }
-
-    const cores = navigator.hardwareConcurrency || 0;
-    if (cores > 0 && cores < 4) {
-      return { score: 0, gpu, reasons: [`low CPU: ${cores} cores`] };
-    }
-    score += cores >= 8 ? 12 : cores >= 4 ? 6 : 4;
 
     const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (conn) {
-      if (conn.saveData) return { score: 0, gpu, reasons: ["data saver"] };
+      if (conn.saveData) return { highEnd: false, gpu, reasons: ["data saver"] };
       if (["slow-2g", "2g", "3g"].includes(conn.effectiveType)) {
-        return { score: 0, gpu, reasons: [`slow network: ${conn.effectiveType}`] };
+        return { highEnd: false, gpu, reasons: [`slow network: ${conn.effectiveType}`] };
       }
-      score += conn.effectiveType === "4g" ? 8 : 5;
-    } else {
-      score += 5;
     }
 
-    return {
-      score: Math.max(0, Math.min(100, score)),
-      gpu,
-      reasons,
-    };
+    return { highEnd: true, gpu, cores, reasons };
   }
 
   function decideMode() {
-    // Mobile is hard-locked to video: no scoring, no query override.
+    // Mobile is hard-locked to video: no detection, no query override.
     if (isMobileDevice()) {
       return { mode: "video", forced: false, source: "mobile" };
     }
@@ -115,13 +105,12 @@
       return { mode: forced, forced: true, source: "query" };
     }
 
-    const profile = scoreDevice();
-    const mode = profile.score >= THREE_D_THRESHOLD ? "3d" : "video";
-
+    // Default: video. Only escalate to 3D on a confirmed high-end device.
+    const profile = checkHighEnd();
     return {
-      mode,
+      mode: profile.highEnd ? "3d" : "video",
       forced: false,
-      source: "desktop-score",
+      source: "desktop-check",
       profile,
     };
   }
