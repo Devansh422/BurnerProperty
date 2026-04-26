@@ -39,46 +39,43 @@
     }
 
     const canvas = document.createElement("canvas");
-    const gl2 = canvas.getContext("webgl2");
-    if (!gl2) {
-      return { highEnd: false, reasons: ["no WebGL2"] };
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+    if (!gl) {
+      return { highEnd: false, reasons: ["no WebGL"] };
     }
 
     let gpu = "";
-    const dbg = gl2.getExtension("WEBGL_debug_renderer_info");
+    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
     if (dbg) {
-      gpu = (gl2.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "").toLowerCase();
+      gpu = (gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "").toLowerCase();
 
-      // Hard reject only on software renderers and clearly antique mobile GPUs.
-      // Note: we deliberately do NOT reject "intel hd"/"intel uhd" — Chrome routes
-      // WebGL through ANGLE on the integrated GPU on many laptops that *also*
-      // have a discrete GPU, so that string is not a reliable weakness signal.
+      // Hard reject only on software renderers — Intel iGPU strings are NOT
+      // a reliable weakness signal because Chrome routes WebGL through ANGLE
+      // on the integrated GPU even on machines that also have a discrete GPU.
       const blocked = [
         "swiftshader", "llvmpipe", "software",
-        "mesa offscreen", "microsoft basic",
-        "mali-4", "powervr sgx"
+        "mesa offscreen", "microsoft basic"
       ];
       if (blocked.some((s) => gpu.includes(s))) {
-        return { highEnd: false, gpu, reasons: ["blocked GPU"] };
+        return { highEnd: false, gpu, reasons: ["software renderer"] };
       }
     } else {
       reasons.push("gpu info hidden");
     }
 
-    // CPU: high-end machines today have ≥8 logical cores. Some browsers cap this
-    // at lower values for privacy; treat 0/undefined as "unknown" and accept it
-    // rather than reject (Safari sometimes reports 0).
+    // CPU: 4+ cores is enough for the scene; lower than that is genuinely
+    // low-end. Treat 0/undefined as "unknown" and accept it.
     const cores = navigator.hardwareConcurrency;
-    if (typeof cores === "number" && cores > 0 && cores < 8) {
-      return { highEnd: false, cores, reasons: [`cores ${cores} < 8`] };
+    if (typeof cores === "number" && cores > 0 && cores < 4) {
+      return { highEnd: false, cores, reasons: [`cores ${cores} < 4`] };
     }
 
-    // RAM: browsers cap deviceMemory at 8GB, and many (Firefox/Safari) don't
-    // expose it at all. Require 8 when present, accept when missing.
+    // RAM: browsers cap deviceMemory at 8GB and many (Firefox/Safari) hide it
+    // entirely. Require ≥4GB when reported, accept when missing.
     if ("deviceMemory" in navigator) {
       const memory = navigator.deviceMemory;
-      if (typeof memory === "number" && memory > 0 && memory < 8) {
-        return { highEnd: false, memory, reasons: [`memory ${memory}GB < 8`] };
+      if (typeof memory === "number" && memory > 0 && memory < 4) {
+        return { highEnd: false, memory, reasons: [`memory ${memory}GB < 4`] };
       }
     }
 
