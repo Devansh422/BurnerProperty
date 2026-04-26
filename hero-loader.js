@@ -1,49 +1,10 @@
 (() => {
-  const THREE_D_THRESHOLD = 60;
-  const FORCE_KEY = "hero-mode";
-  const AUTO_MODE_KEY = "hero-auto-mode";
+  const THREE_D_THRESHOLD = 55;
 
   let fallbackHeroMarkup = "";
 
   function isValidMode(mode) {
     return mode === "3d" || mode === "video";
-  }
-
-  function readStorage(storage, key) {
-    try {
-      return storage.getItem(key);
-    } catch {
-      return null;
-    }
-  }
-
-  function writeStorage(storage, key, value) {
-    try {
-      storage.setItem(key, value);
-    } catch {
-      // Ignore storage failures in restrictive/private browsing contexts.
-    }
-  }
-
-  function removeStorage(storage, key) {
-    try {
-      storage.removeItem(key);
-    } catch {
-      // Ignore storage failures in restrictive/private browsing contexts.
-    }
-  }
-
-  function readAutoModeCache() {
-    const mode = readStorage(sessionStorage, AUTO_MODE_KEY);
-    return isValidMode(mode) ? mode : null;
-  }
-
-  function writeAutoModeCache(mode, detail) {
-    if (!isValidMode(mode)) {
-      return;
-    }
-
-    writeStorage(sessionStorage, AUTO_MODE_KEY, mode);
   }
 
   function ensureHeroVideoPlayback(hero) {
@@ -90,7 +51,7 @@
         return { score: 0, gpu, reasons: ["software renderer"] };
       }
 
-      const weak = ["intel hd", "intel uhd", "intel iris", "mali-4", "mali-t", "adreno 3", "adreno 4", "powervr sgx"];
+      const weak = ["intel hd", "intel uhd", "mali-4", "mali-t", "adreno 3", "adreno 4", "powervr sgx"];
       score += weak.some((w) => gpu.includes(w)) ? 5 : 25;
     } else {
       // Some browsers block renderer info for privacy; don't under-score capable WebGL2 devices.
@@ -114,7 +75,12 @@
       if (["slow-2g", "2g", "3g"].includes(conn.effectiveType)) {
         return { score: 0, gpu, reasons: [`slow network: ${conn.effectiveType}`] };
       }
-      if (conn.effectiveType === "4g") score += 10;
+      if (conn.effectiveType === "4g") {
+        score += 10;
+      } else {
+        // Many desktop browsers expose partial/empty network info; keep scoring neutral.
+        score += 5;
+      }
     } else {
       score += 5;
     }
@@ -139,28 +105,13 @@
   function decideMode() {
     const params = new URLSearchParams(window.location.search);
     const forced = params.get("hero");
-    if (forced === "auto") {
-      removeStorage(sessionStorage, FORCE_KEY);
-      removeStorage(sessionStorage, AUTO_MODE_KEY);
-    }
-
-    if (isValidMode(forced)) {
-      writeStorage(sessionStorage, FORCE_KEY, forced);
-      return { mode: forced, forced: true, source: "query" };
-    }
 
     if (isMobileDevice()) {
       return { mode: "video", forced: false, source: "mobile" };
     }
 
-    const saved = readStorage(sessionStorage, FORCE_KEY);
-    if (isValidMode(saved)) {
-      return { mode: saved, forced: true, source: "session" };
-    }
-
-    const cached = readAutoModeCache();
-    if (cached === "3d") {
-      return { mode: cached, forced: false, source: "cache" };
+    if (isValidMode(forced)) {
+      return { mode: forced, forced: true, source: "query" };
     }
 
     const profile = scoreDevice();
@@ -188,9 +139,9 @@
   }
 
   async function load3D(hero) {
+    document.documentElement.dataset.heroMode = "3d";
     const mod = await import("/hero-3d.js");
     await mod.init(hero);
-    document.documentElement.dataset.heroMode = "3d";
   }
 
   function init() {
@@ -202,16 +153,9 @@
     const decision = decideMode();
     console.debug("[hero] mode decision:", decision);
 
-    if (!decision.forced) {
-      writeAutoModeCache(decision.mode, decision);
-    }
-
     if (decision.mode === "3d") {
       load3D(hero).catch((error) => {
         console.warn("[hero] 3D hero failed, falling back to video", error);
-        if (!decision.forced) {
-          removeStorage(sessionStorage, AUTO_MODE_KEY);
-        }
         loadVideo(hero);
       });
     } else {
@@ -219,16 +163,17 @@
     }
 
     window.switchHero = (mode) => {
+      const url = new URL(window.location.href);
+
       if (mode === "auto") {
-        removeStorage(sessionStorage, FORCE_KEY);
-        removeStorage(sessionStorage, AUTO_MODE_KEY);
-        location.reload();
+        url.searchParams.delete("hero");
+        window.location.assign(url.toString());
         return;
       }
 
       if (!isValidMode(mode)) return;
-      writeStorage(sessionStorage, FORCE_KEY, mode);
-      location.reload();
+      url.searchParams.set("hero", mode);
+      window.location.assign(url.toString());
     };
   }
 
