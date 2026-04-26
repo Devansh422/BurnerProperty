@@ -46,6 +46,23 @@
     writeStorage(sessionStorage, AUTO_MODE_KEY, mode);
   }
 
+  function ensureHeroVideoPlayback(hero) {
+    const video = hero?.querySelector("video");
+    if (!(video instanceof HTMLVideoElement)) {
+      return;
+    }
+
+    video.muted = true;
+    video.playsInline = true;
+
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => {
+        // Autoplay can still be blocked by browser policies; fail silently.
+      });
+    }
+  }
+
   function isMobileDevice() {
     const uaMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const compactViewport = window.matchMedia("(max-width: 767px)").matches;
@@ -142,13 +159,18 @@
     }
 
     const cached = readAutoModeCache();
-    if (cached === "3d") {
+    if (isValidMode(cached)) {
       return { mode: cached, forced: false, source: "cache" };
     }
+
+    const profile = scoreDevice();
+    const mode = profile.score >= THREE_D_THRESHOLD ? "3d" : "video";
+
     return {
-      mode: "3d",
+      mode,
       forced: false,
-      source: cached === "video" ? "desktop-default-override" : "desktop-default",
+      source: "desktop-score",
+      profile,
     };
   }
 
@@ -159,8 +181,10 @@
     }
 
     hero.classList.remove("hero--three");
+    delete hero.dataset.hero3dMounted;
     document.body.classList.remove("hero-3d-active");
     document.documentElement.dataset.heroMode = "video";
+    ensureHeroVideoPlayback(hero);
   }
 
   async function load3D(hero) {
@@ -177,9 +201,17 @@
 
     const decision = decideMode();
     console.debug("[hero] mode decision:", decision);
+
+    if (!decision.forced) {
+      writeAutoModeCache(decision.mode, decision);
+    }
+
     if (decision.mode === "3d") {
       load3D(hero).catch((error) => {
         console.warn("[hero] 3D hero failed, falling back to video", error);
+        if (!decision.forced) {
+          writeAutoModeCache("video", { source: "3d-failure" });
+        }
         loadVideo(hero);
       });
     } else {
