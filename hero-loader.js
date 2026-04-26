@@ -37,27 +37,13 @@
   // Returns a reason string when the device is *clearly* unable to handle the
   // 3D scene; null otherwise. Default is to allow 3D.
   function lowEndReason() {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return "prefers-reduced-motion";
-    }
-
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
     if (!gl) return "no WebGL";
 
-    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
-    if (dbg) {
-      const gpu = (gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "").toLowerCase();
-      const software = ["swiftshader", "llvmpipe", "software", "mesa offscreen", "microsoft basic"];
-      if (software.some((s) => gpu.includes(s))) return "software renderer";
-    }
-
     const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (conn) {
-      if (conn.saveData) return "data saver";
-      if (["slow-2g", "2g"].includes(conn.effectiveType)) {
-        return `slow network: ${conn.effectiveType}`;
-      }
+    if (conn && ["slow-2g", "2g"].includes(conn.effectiveType)) {
+      return `slow network: ${conn.effectiveType}`;
     }
 
     return null;
