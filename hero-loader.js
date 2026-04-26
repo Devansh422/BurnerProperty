@@ -41,6 +41,13 @@
     const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
     if (!gl) return "no WebGL";
 
+    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+    if (dbg) {
+      const gpu = (gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || "").toLowerCase();
+      const software = ["swiftshader", "llvmpipe", "software", "mesa offscreen", "microsoft basic"];
+      if (software.some((s) => gpu.includes(s))) return "software renderer";
+    }
+
     const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (conn && ["slow-2g", "2g"].includes(conn.effectiveType)) {
       return `slow network: ${conn.effectiveType}`;
