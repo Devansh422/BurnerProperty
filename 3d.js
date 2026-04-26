@@ -631,19 +631,13 @@ float snoise(vec3 v) {
 		const HOUSE_DISSOLVE_PROGRESS_END = 1.2;
 		const houseDissolveUniformData = {
 			uEdgeColor: { value: new THREE.Color(0xffffff) },
-			uEdgeColorHot: { value: new THREE.Color(0xffffff) },
-			uEdgeColorCore: { value: new THREE.Color(0xffffff) },
 			uFreq: { value: 0.14 },
 			uAmp: { value: 0.08 },
 			uProgress: { value: HOUSE_DISSOLVE_PROGRESS_START },
-			uEdge: { value: 0.12 },
-			uEdgeIntensity: { value: 1.15 },
+			uEdge: { value: 0.08 },
+			uEdgeIntensity: { value: 0.95 },
 			uYMin: { value: 0.0 },
-			uYMax: { value: 1.0 },
-			uTime: { value: 0.0 },
-			uEmberScatter: { value: 0.42 },
-			uEmberSpeed: { value: 0.45 },
-			uFlameRise: { value: 0.16 }
+			uYMax: { value: 1.0 }
 		};
 		const scrollSequence = {
 			progress: 0,
@@ -783,15 +777,9 @@ float snoise(vec3 v) {
         uniform float uProgress;
         uniform float uEdge;
         uniform vec3 uEdgeColor;
-        uniform vec3 uEdgeColorHot;
-        uniform vec3 uEdgeColorCore;
 				uniform float uEdgeIntensity;
 				uniform float uYMin;
 				uniform float uYMax;
-				uniform float uTime;
-				uniform float uEmberScatter;
-				uniform float uEmberSpeed;
-				uniform float uFlameRise;
 
         ${DISSOLVE_SNOISE_GLSL}
       `);
@@ -799,50 +787,15 @@ float snoise(vec3 v) {
 			shader.fragmentShader = shader.fragmentShader.replace("#include <dithering_fragment>", `#include <dithering_fragment>
 
 				float heightNorm = clamp((vWorldPos.y - uYMin) / max(uYMax - uYMin, 0.0001), 0.0, 1.0);
+				float noise = snoise(vPos * uFreq) * uAmp;
+				float dissolveField = heightNorm + noise;
 
-				// Flowing noise field — drifts upward over time so the front shimmers like flame.
-				vec3 flowPos = vPos * uFreq;
-				flowPos.y -= uTime * uFlameRise;
-				float noise = snoise(flowPos) * uAmp;
-
-				// Slow, gentle turbulence — was previously a fast jitter; now drifts smoothly.
-				float fineFlicker = snoise(vPos * (uFreq * 3.0) + vec3(0.0, uTime * uEmberSpeed * 0.8, uTime * 0.25)) * (uAmp * 0.35);
-
-				float dissolveField = heightNorm + noise + fineFlicker;
-
-				// Ember scatter zone: a wider, softer cloud of floating particles above the front.
-				float aboveFront = dissolveField - uProgress;
-				float emberMask = 0.0;
-				if (aboveFront > 0.0 && aboveFront < uEmberScatter) {
-					float emberNoise = snoise(vPos * (uFreq * 5.5) + vec3(uTime * uEmberSpeed * 0.5, uTime * uEmberSpeed * 0.8, 0.0));
-					float emberFalloff = 1.0 - (aboveFront / max(uEmberScatter, 0.0001));
-					emberMask = step(0.58 - emberFalloff * 0.55, emberNoise);
-				}
-
-				if (dissolveField > uProgress && emberMask < 0.5) discard;
+				if (dissolveField > uProgress) discard;
 
 				float edgeStart = uProgress - uEdge;
-				bool inMainEdge = dissolveField > edgeStart && dissolveField <= uProgress;
-				bool isEmber = emberMask >= 0.5;
 
-				if (inMainEdge || isEmber) {
-					float edgeT;
-					if (isEmber) {
-						edgeT = clamp(aboveFront / max(uEmberScatter, 0.0001), 0.0, 1.0);
-					} else {
-						edgeT = clamp((uProgress - dissolveField) / max(uEdge, 0.0001), 0.0, 1.0);
-					}
-
-					vec3 flameColor = uEdgeColorCore;
-
-					// Smooth, slow brightness breathing instead of fast sparkle.
-					float sparkle = snoise(vPos * (uFreq * 3.5) + vec3(uTime * 0.6, uTime * 0.45, uTime * 0.8));
-					float sparkleMul = 0.9 + 0.18 * sparkle;
-					// Embers fade out gently the further they drift from the front.
-					float emberFade = isEmber ? smoothstep(1.0, 0.0, edgeT) : 1.0;
-					float intensity = uEdgeIntensity * sparkleMul * emberFade;
-
-					gl_FragColor = vec4(flameColor * intensity, 1.0);
+				if (dissolveField > edgeStart && dissolveField <= uProgress) {
+					gl_FragColor = vec4(vec3(uEdgeColor) * uEdgeIntensity, 1.0);
         } else {
           gl_FragColor = vec4(gl_FragColor.xyz, 1.0);
         }
@@ -1782,7 +1735,6 @@ float snoise(vec3 v) {
 			controls.update();
 			enforceLockedCameraY();
 			grassMaterial.update(clock.elapsedTime);
-			houseDissolveUniformData.uTime.value = clock.elapsedTime;
 			if (stats) {
 				stats.update();
 			}
