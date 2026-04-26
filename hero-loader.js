@@ -37,6 +37,10 @@
   // Returns a reason string when the device is *clearly* unable to handle the
   // 3D scene; null otherwise. Default is to allow 3D.
   function lowEndReason() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return "prefers-reduced-motion";
+    }
+
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
     if (!gl) return "no WebGL";
