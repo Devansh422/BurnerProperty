@@ -15,10 +15,11 @@ import * as THREE from "three";
 		const DEBUG_MODE = queryParams.has("debug") || queryParams.has("debug3d");
 		const isSmallScreen = window.matchMedia("(max-width: 768px)").matches;
 		const PERFORMANCE = {
-			maxPixelRatio: isSmallScreen ? 1.2 : 1.5,
-			shadowMapSize: isSmallScreen ? 1024 : 1536,
-			grassCount: isSmallScreen ? 9000 : 18000,
-			visualEpsilon: 0.0005
+			maxPixelRatio: isSmallScreen ? 1.0 : 1.25,
+			shadowMapSize: isSmallScreen ? 512 : 1024,
+			grassCount: isSmallScreen ? 6000 : 12000,
+			visualEpsilon: 0.0005,
+			maxDeltaSeconds: 1 / 30
 		};
 
 		const sceneSection = document.querySelector(".three-scene-section");
@@ -198,14 +199,29 @@ import * as THREE from "three";
 		);
 		const LOCKED_CAMERA_Y = 1.2;
 
-		const renderer = new THREE.WebGLRenderer({ antialias: true });
+		const renderer = new THREE.WebGLRenderer({
+			antialias: true,
+			powerPreference: "high-performance",
+			stencil: false
+		});
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, PERFORMANCE.maxPixelRatio));
 		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
 		renderer.toneMappingExposure = 1;
+		renderer.outputColorSpace = THREE.SRGBColorSpace;
 		container.appendChild(renderer.domElement);
+
+		let isSceneVisible = true;
+		if (sceneSection && typeof IntersectionObserver === "function") {
+			const visibilityObserver = new IntersectionObserver((entries) => {
+				for (let i = 0; i < entries.length; i++) {
+					isSceneVisible = entries[i].isIntersecting;
+				}
+			}, { threshold: 0 });
+			visibilityObserver.observe(sceneSection);
+		}
 
 		const controls = new OrbitControls(camera, renderer.domElement);
 		controls.enableDamping = true;
@@ -615,13 +631,19 @@ float snoise(vec3 v) {
 		const HOUSE_DISSOLVE_PROGRESS_END = 1.2;
 		const houseDissolveUniformData = {
 			uEdgeColor: { value: new THREE.Color(0xffffff) },
+			uEdgeColorHot: { value: new THREE.Color(0xffffff) },
+			uEdgeColorCore: { value: new THREE.Color(0xffffff) },
 			uFreq: { value: 0.14 },
 			uAmp: { value: 0.08 },
 			uProgress: { value: HOUSE_DISSOLVE_PROGRESS_START },
-			uEdge: { value: 0.08 },
-			uEdgeIntensity: { value: 0.95 },
+			uEdge: { value: 0.12 },
+			uEdgeIntensity: { value: 1.15 },
 			uYMin: { value: 0.0 },
-			uYMax: { value: 1.0 }
+			uYMax: { value: 1.0 },
+			uTime: { value: 0.0 },
+			uEmberScatter: { value: 0.42 },
+			uEmberSpeed: { value: 0.45 },
+			uFlameRise: { value: 0.16 }
 		};
 		const scrollSequence = {
 			progress: 0,
@@ -761,9 +783,15 @@ float snoise(vec3 v) {
         uniform float uProgress;
         uniform float uEdge;
         uniform vec3 uEdgeColor;
+        uniform vec3 uEdgeColorHot;
+        uniform vec3 uEdgeColorCore;
 				uniform float uEdgeIntensity;
 				uniform float uYMin;
 				uniform float uYMax;
+				uniform float uTime;
+				uniform float uEmberScatter;
+				uniform float uEmberSpeed;
+				uniform float uFlameRise;
 
         ${DISSOLVE_SNOISE_GLSL}
       `);
@@ -771,15 +799,50 @@ float snoise(vec3 v) {
 			shader.fragmentShader = shader.fragmentShader.replace("#include <dithering_fragment>", `#include <dithering_fragment>
 
 				float heightNorm = clamp((vWorldPos.y - uYMin) / max(uYMax - uYMin, 0.0001), 0.0, 1.0);
-				float noise = snoise(vPos * uFreq) * uAmp;
-				float dissolveField = heightNorm + noise;
 
-				if (dissolveField > uProgress) discard;
+				// Flowing noise field — drifts upward over time so the front shimmers like flame.
+				vec3 flowPos = vPos * uFreq;
+				flowPos.y -= uTime * uFlameRise;
+				float noise = snoise(flowPos) * uAmp;
+
+				// Slow, gentle turbulence — was previously a fast jitter; now drifts smoothly.
+				float fineFlicker = snoise(vPos * (uFreq * 3.0) + vec3(0.0, uTime * uEmberSpeed * 0.8, uTime * 0.25)) * (uAmp * 0.35);
+
+				float dissolveField = heightNorm + noise + fineFlicker;
+
+				// Ember scatter zone: a wider, softer cloud of floating particles above the front.
+				float aboveFront = dissolveField - uProgress;
+				float emberMask = 0.0;
+				if (aboveFront > 0.0 && aboveFront < uEmberScatter) {
+					float emberNoise = snoise(vPos * (uFreq * 5.5) + vec3(uTime * uEmberSpeed * 0.5, uTime * uEmberSpeed * 0.8, 0.0));
+					float emberFalloff = 1.0 - (aboveFront / max(uEmberScatter, 0.0001));
+					emberMask = step(0.58 - emberFalloff * 0.55, emberNoise);
+				}
+
+				if (dissolveField > uProgress && emberMask < 0.5) discard;
 
 				float edgeStart = uProgress - uEdge;
+				bool inMainEdge = dissolveField > edgeStart && dissolveField <= uProgress;
+				bool isEmber = emberMask >= 0.5;
 
-				if (dissolveField > edgeStart && dissolveField <= uProgress) {
-					gl_FragColor = vec4(vec3(uEdgeColor) * uEdgeIntensity, 1.0);
+				if (inMainEdge || isEmber) {
+					float edgeT;
+					if (isEmber) {
+						edgeT = clamp(aboveFront / max(uEmberScatter, 0.0001), 0.0, 1.0);
+					} else {
+						edgeT = clamp((uProgress - dissolveField) / max(uEdge, 0.0001), 0.0, 1.0);
+					}
+
+					vec3 flameColor = uEdgeColorCore;
+
+					// Smooth, slow brightness breathing instead of fast sparkle.
+					float sparkle = snoise(vPos * (uFreq * 3.5) + vec3(uTime * 0.6, uTime * 0.45, uTime * 0.8));
+					float sparkleMul = 0.9 + 0.18 * sparkle;
+					// Embers fade out gently the further they drift from the front.
+					float emberFade = isEmber ? smoothstep(1.0, 0.0, edgeT) : 1.0;
+					float intensity = uEdgeIntensity * sparkleMul * emberFade;
+
+					gl_FragColor = vec4(flameColor * intensity, 1.0);
         } else {
           gl_FragColor = vec4(gl_FragColor.xyz, 1.0);
         }
@@ -963,28 +1026,44 @@ float snoise(vec3 v) {
 				}
 				const sectionY = (1 - opacity) * 20;
 
-				section.style.opacity = `${opacity}`;
-				section.style.transform = `translateY(${sectionY}px)`;
-				section.style.filter = "none";
+				if (Math.abs((section.__lastO ?? -1) - opacity) > 0.003 ||
+					Math.abs((section.__lastY ?? -1) - sectionY) > 0.25) {
+					section.style.opacity = `${opacity}`;
+					section.style.transform = `translateY(${sectionY}px)`;
+					section.__lastO = opacity;
+					section.__lastY = sectionY;
+				}
 
 				if (track?.body) {
+					const body = track.body;
 					const bodyReveal = smoothstep01((opacity - 0.12) / 0.88);
 					const bodyOpacity = opacity * (0.62 + 0.38 * bodyReveal);
 					const bodyY = (1 - bodyReveal) * 16 + (1 - opacity) * 6;
 					const bodyTracking = 0.03 - bodyReveal * 0.02;
-
-					track.body.style.opacity = `${bodyOpacity}`;
-					track.body.style.transform = `translateY(${bodyY}px)`;
-					track.body.style.letterSpacing = `${bodyTracking}em`;
+					if (Math.abs((body.__lastO ?? -1) - bodyOpacity) > 0.003 ||
+						Math.abs((body.__lastY ?? -1) - bodyY) > 0.25 ||
+						Math.abs((body.__lastT ?? -1) - bodyTracking) > 0.001) {
+						body.style.opacity = `${bodyOpacity}`;
+						body.style.transform = `translateY(${bodyY}px)`;
+						body.style.letterSpacing = `${bodyTracking}em`;
+						body.__lastO = bodyOpacity;
+						body.__lastY = bodyY;
+						body.__lastT = bodyTracking;
+					}
 				}
 
 				if (track?.cta) {
+					const cta = track.cta;
 					const ctaReveal = smoothstep01((opacity - 0.2) / 0.8);
 					const ctaOpacity = opacity * ctaReveal;
 					const ctaY = (1 - ctaReveal) * 18 + (1 - opacity) * 6;
-
-					track.cta.style.opacity = `${ctaOpacity}`;
-					track.cta.style.transform = `translateY(${ctaY}px)`;
+					if (Math.abs((cta.__lastO ?? -1) - ctaOpacity) > 0.003 ||
+						Math.abs((cta.__lastY ?? -1) - ctaY) > 0.25) {
+						cta.style.opacity = `${ctaOpacity}`;
+						cta.style.transform = `translateY(${ctaY}px)`;
+						cta.__lastO = ctaOpacity;
+						cta.__lastY = ctaY;
+					}
 				}
 
 				if (!track || track.words.length === 0) {
@@ -1007,9 +1086,13 @@ float snoise(vec3 v) {
 					const wordOpacity = opacity * wordProgress;
 					const wordYPercent = (1 - wordProgress) * 115;
 
-					word.style.opacity = `${wordOpacity}`;
-					word.style.transform = `translate3d(0, ${wordYPercent}%, 0)`;
-					word.style.filter = "none";
+					if (Math.abs((word.__lastO ?? -1) - wordOpacity) > 0.005 ||
+						Math.abs((word.__lastY ?? -1) - wordYPercent) > 0.5) {
+						word.style.opacity = `${wordOpacity}`;
+						word.style.transform = `translate3d(0, ${wordYPercent}%, 0)`;
+						word.__lastO = wordOpacity;
+						word.__lastY = wordYPercent;
+					}
 				}
 
 				if (track) {
@@ -1683,8 +1766,13 @@ float snoise(vec3 v) {
 		setupFluffyGrass();
 
 		function animate() {
-			requestAnimationFrame(animate);
-			const deltaTime = clock.getDelta();
+			if (document.hidden || !isSceneVisible) {
+				// Drain the clock so the next active tick doesn't see a giant delta.
+				clock.getDelta();
+				return;
+			}
+
+			const deltaTime = Math.min(clock.getDelta(), PERFORMANCE.maxDeltaSeconds);
 			scrollSequence.constantRotationY = (
 				scrollSequence.constantRotationY +
 				deltaTime * scrollSequence.constantSpinRadPerSec
@@ -1693,26 +1781,45 @@ float snoise(vec3 v) {
 
 			controls.update();
 			enforceLockedCameraY();
-			grassMaterial.update(clock.getElapsedTime());
+			grassMaterial.update(clock.elapsedTime);
+			houseDissolveUniformData.uTime.value = clock.elapsedTime;
 			if (stats) {
 				stats.update();
 			}
 			renderer.render(scene, camera);
 		}
 
-		animate();
+		renderer.setAnimationLoop(animate);
 
-		window.addEventListener("resize", () => {
-			camera.aspect = window.innerWidth / window.innerHeight;
+		let lastViewportWidth = window.innerWidth;
+		let lastViewportHeight = window.innerHeight;
+		let resizeTimerId = null;
+		function handleResize() {
+			const w = window.innerWidth;
+			const h = window.innerHeight;
+			if (w === lastViewportWidth && h === lastViewportHeight) return;
+			lastViewportWidth = w;
+			lastViewportHeight = h;
+
+			camera.aspect = w / h;
 			camera.updateProjectionMatrix();
-			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setSize(w, h);
 			renderer.setPixelRatio(Math.min(window.devicePixelRatio, PERFORMANCE.maxPixelRatio));
 			enforceLockedCameraY();
 			enforceScrollablePage();
 			if (ScrollTrigger) {
 				ScrollTrigger.refresh();
 			}
-		});
+		}
+		window.addEventListener("resize", () => {
+			if (resizeTimerId !== null) {
+				window.clearTimeout(resizeTimerId);
+			}
+			resizeTimerId = window.setTimeout(() => {
+				resizeTimerId = null;
+				handleResize();
+			}, 150);
+		}, { passive: true });
 
 		// Expose scene objects in DevTools for debugging.
 		window.THREE_DEBUG = {

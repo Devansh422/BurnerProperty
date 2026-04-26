@@ -1,5 +1,5 @@
 (() => {
-  const THREE_D_THRESHOLD = 55;
+  const THREE_D_THRESHOLD = 60;
 
   let fallbackHeroMarkup = "";
 
@@ -35,11 +35,15 @@
     const reasons = [];
     let score = 0;
 
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return { score: 0, gpu: null, reasons: ["prefers-reduced-motion"] };
+    }
+
     const canvas = document.createElement("canvas");
     const gl2 = canvas.getContext("webgl2");
     const gl = gl2 || canvas.getContext("webgl");
     if (!gl) return { score: 0, gpu: null, reasons: ["no WebGL"] };
-    score += gl2 ? 30 : 20;
+    score += gl2 ? 25 : 12;
 
     let gpu = "";
     const dbg = gl.getExtension("WEBGL_debug_renderer_info");
@@ -51,23 +55,35 @@
         return { score: 0, gpu, reasons: ["software renderer"] };
       }
 
-      const weak = ["intel hd", "intel uhd", "mali-4", "mali-t", "adreno 3", "adreno 4", "powervr sgx"];
-      score += weak.some((w) => gpu.includes(w)) ? 5 : 25;
+      // Integrated/old mobile GPUs cannot hold 60fps with the grass shader — auto-fail.
+      const weak = ["intel hd", "intel uhd", "mali-4", "mali-t", "adreno 3", "adreno 4", "powervr sgx", "intel(r) hd", "intel(r) uhd"];
+      if (weak.some((w) => gpu.includes(w))) {
+        return { score: 0, gpu, reasons: ["weak GPU"] };
+      }
+
+      score += 30;
     } else {
-      // Some browsers block renderer info for privacy; don't under-score capable WebGL2 devices.
-      score += gl2 ? 18 : 8;
+      // Some browsers (Safari, privacy modes) hide renderer info.
+      // WebGL2 + hidden GPU is most often Apple silicon / modern Mac → still capable.
+      score += gl2 ? 16 : 6;
       reasons.push("gpu info unavailable");
     }
 
     if ("deviceMemory" in navigator) {
       const memory = navigator.deviceMemory;
-      score += memory >= 8 ? 15 : memory >= 4 ? 10 : memory >= 2 ? 3 : 0;
+      if (memory < 2) {
+        return { score: 0, gpu, reasons: [`low memory: ${memory}GB`] };
+      }
+      score += memory >= 8 ? 18 : memory >= 4 ? 10 : 0;
     } else {
       score += 8;
     }
 
-    const cores = navigator.hardwareConcurrency || 2;
-    score += cores >= 8 ? 10 : cores >= 4 ? 7 : cores >= 2 ? 3 : 0;
+    const cores = navigator.hardwareConcurrency || 0;
+    if (cores > 0 && cores < 4) {
+      return { score: 0, gpu, reasons: [`low CPU: ${cores} cores`] };
+    }
+    score += cores >= 8 ? 12 : cores >= 4 ? 6 : 4;
 
     const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (conn) {
@@ -75,24 +91,9 @@
       if (["slow-2g", "2g", "3g"].includes(conn.effectiveType)) {
         return { score: 0, gpu, reasons: [`slow network: ${conn.effectiveType}`] };
       }
-      if (conn.effectiveType === "4g") {
-        score += 10;
-      } else {
-        // Many desktop browsers expose partial/empty network info; keep scoring neutral.
-        score += 5;
-      }
+      score += conn.effectiveType === "4g" ? 8 : 5;
     } else {
       score += 5;
-    }
-
-    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (isMobile && window.innerWidth < 768) {
-      score -= 15;
-      reasons.push("mobile");
-    }
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return { score: 0, gpu, reasons: ["prefers-reduced-motion"] };
     }
 
     return {
@@ -103,13 +104,13 @@
   }
 
   function decideMode() {
-    const params = new URLSearchParams(window.location.search);
-    const forced = params.get("hero");
-
+    // Mobile is hard-locked to video: no scoring, no query override.
     if (isMobileDevice()) {
       return { mode: "video", forced: false, source: "mobile" };
     }
 
+    const params = new URLSearchParams(window.location.search);
+    const forced = params.get("hero");
     if (isValidMode(forced)) {
       return { mode: forced, forced: true, source: "query" };
     }
@@ -140,6 +141,17 @@
 
   async function load3D(hero) {
     document.documentElement.dataset.heroMode = "3d";
+    // Pause/strip the inline video before importing so it doesn't continue
+    // downloading bytes that will be discarded when we mount the 3D scene.
+    const inlineVideo = hero?.querySelector("video");
+    if (inlineVideo instanceof HTMLVideoElement) {
+      try { inlineVideo.pause(); } catch (_) {}
+      inlineVideo.removeAttribute("autoplay");
+      inlineVideo.removeAttribute("src");
+      while (inlineVideo.firstChild) inlineVideo.removeChild(inlineVideo.firstChild);
+      try { inlineVideo.load(); } catch (_) {}
+    }
+
     const mod = await import("/hero-3d.js");
     await mod.init(hero);
   }

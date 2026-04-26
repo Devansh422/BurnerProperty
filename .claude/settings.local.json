@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check c:/Users/sravi/Burner/hero-loader.js)",
+      "Bash(node --check c:/Users/sravi/Burner/3d.js)"
+    ]
+  }
+}
